@@ -1,0 +1,49 @@
+import bpy
+import struct
+import xml.etree.ElementTree as ET
+import sys
+
+# Define input and output file paths
+input_file_path = "/path/to/input_file"
+output_file_path = "/path/to/output_file"
+
+# Load model
+if input_file_path.endswith('.gltf'):
+    bpy.ops.import_scene.gltf(filepath=input_file_path)
+    mesh = bpy.data.objects[0].data
+elif input_file_path.endswith('.obj'):
+    bpy.ops.import_scene.obj(filepath=input_file_path)
+    mesh = bpy.data.objects[0].data
+
+# Export DAT file
+with open(output_file_path + '.dat', 'wb') as f:
+    for i, face in enumerate(mesh.polygons):
+        for j, vertex_index in enumerate(face.vertices):
+            vertex = mesh.vertices[vertex_index].co
+            f.write(struct.pack('fff', *vertex))
+
+# Export XML file
+root = ET.Element('mesh')
+for vertex in mesh.vertices:
+    ET.SubElement(root, 'vertex', x=str(vertex.co.x), y=str(vertex.co.y), z=str(vertex.co.z))
+
+for face in mesh.polygons:
+    vertices = []
+    for vertex_index in face.vertices:
+        vertex = mesh.vertices[vertex_index]
+        vertices.append(str(vertex_index))
+    ET.SubElement(root, 'face', vertices=' '.join(vertices))
+
+xml_string = ET.tostring(root, encoding='utf8', method='xml')
+with open(output_file_path + '.xml', 'wb') as f:
+    f.write(xml_string)
+
+# Quit Blender
+bpy.ops.wm.quit_blender()//   blender --background --python export.py   To use this script, open a terminal or command prompt, navigate to the directory containing the script, and run the following command:
+
+
+Replace export.py with the name of your script file. This will start Blender in background mode and run your script, which will import the input file, export the DAT and XML files, and then quit Blender. The DAT and XML files will be saved in the same directory as the script. You may need to modify the input and output file paths in the script to match your needs.
+   To use this script, open a terminal or command prompt, navigate to the directory containing the script, and run the following command:
+   
+   
+   Replace export.py with the name of your script file. This will start Blender in background mode and run your script, which will import the input file, export the DAT and XML files, and then quit Blender. The DAT and XML files will be saved in the same directory as the script. You may need to modify the input and output file paths in the script to match your needs.
